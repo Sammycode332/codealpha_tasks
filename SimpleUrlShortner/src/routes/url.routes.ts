@@ -7,6 +7,12 @@ router.post("/api/shorten", (req, res) => {
     if (typeof url !== "string" || !url.trim()) {
        return res.status(400).json({ error: "Please provide a URL." });
     }
+    try {
+     new URL(url);
+     } catch {
+       return res.status(400).json({ error: "Please provide a valid URL." });
+     }
+
     const code = shortenUrl(url)
     return res.status(201).json({code})
 
