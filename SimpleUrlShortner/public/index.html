@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Turn long URLs into short, shareable links."
+  >
+  <title>LinkShort — URL Shortener</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/script.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <section class="shortener-card">
+      <p class="eyebrow">SIMPLE URL SHORTENER</p>
+
+      <h1>Shorten your links.</h1>
+
+      <p class="description">
+        Make long URLs short, simple, and easy to share.
+      </p>
+
+      <form id="shorten-form">
+        <label for="url-input">Your long URL</label>
+
+        <div class="input-group">
+          <input
+            type="url"
+            id="url-input"
+            name="url"
+            placeholder="https://example.com/your-long-link"
+            required
+          >
+
+          <button type="submit" id="shorten-button">
+            Shorten URL
+          </button>
+        </div>
+      </form>
+
+      <p id="status-message" role="status" aria-live="polite"></p>
+
+      <section id="result" hidden>
+        <h2>Your shortened link</h2>
+
+        <div class="result-group">
+          <a id="short-url" href="#" target="_blank" rel="noopener noreferrer"></a>
+
+          <button type="button" id="copy-button">
+            Copy link
+          </button>
+        </div>
+      </section>
+
+      <p class="footer-text">Short links. Easy sharing.</p>
+    </section>
+  </main>
+</body>
+</html>
