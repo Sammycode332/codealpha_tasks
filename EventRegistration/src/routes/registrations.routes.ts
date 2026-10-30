@@ -1,13 +1,22 @@
 
 import { Router } from "express";
-import { pool } from "../db.js";
+import { pool}from "../db.js";
+import type { PoolClient } from "pg";
 
 const router = Router();
 
 
 router.post("/", async (req, res) => {
+    if (
+     typeof req.body !== "object" ||
+     req.body === null ||
+     Array.isArray(req.body)
+   ) {
+     return res.status(400).json({
+       error: "Request body must be a valid object",
+     });
+    }
   const { user_id, event_id } = req.body;
-
   if (
     !Number.isInteger(user_id) ||
     user_id <= 0 ||
@@ -19,9 +28,10 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const client = await pool.connect();
+  let client: PoolClient | undefined;
 
   try {
+    client = await pool.connect();
     await client.query("BEGIN");
 
     const eventResult = await client.query(
@@ -32,7 +42,7 @@ router.post("/", async (req, res) => {
       [event_id]
     );
 
-    if (eventResult.rowCount === 0) {
+    if (eventResult.rows.length === 0) {
       await client.query("ROLLBACK");
       return res.status(404).json({ error: "Event not found" });
     }
@@ -66,7 +76,13 @@ router.post("/", async (req, res) => {
 
     return res.status(201).json(result.rows[0]);
   } catch (error) {
-    await client.query("ROLLBACK");
+     if (client) {
+        try {
+         await client.query("ROLLBACK");
+        } catch (rollbackError) {
+       console.error("Failed to rollback transaction:", rollbackError);
+      }  
+    }
 
     if (
       typeof error === "object" &&
@@ -96,7 +112,7 @@ router.post("/", async (req, res) => {
       error: "Failed to create registration",
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
