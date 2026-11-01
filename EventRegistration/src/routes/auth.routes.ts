@@ -1,5 +1,5 @@
 import { Router } from "express";
-import supabase from "../lib/supabase.js"
+import {supabaseKey,supabaseUrl}from "../lib/supabase.js"
 
 const router = Router()
 
@@ -74,7 +74,7 @@ router.post("/login", async (req, res) => {
         });
 
         if (error || !data.session) {
-            
+
             return res.status(401).json({
                 error: "Invalid email or password",
             });
@@ -95,5 +95,47 @@ router.post("/login", async (req, res) => {
     }
 });
 
+router.post("/logout", authenticate, async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const token = authHeader?.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({
+                error: "Authentication required"
+            });
+        }
+
+        const response = await fetch(
+            `${supabaseUrl}/auth/v1/logout?scope=global`,
+            {
+                method: "POST",
+                headers: {
+                    apikey: supabaseKey!,
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            console.error("Supabase logout failed:", response.status);
+
+            return res.status(502).json({
+                error: "Unable to complete logout"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Successfully logged out"
+        });
+
+    } catch (error) {
+        console.error("Logout error:", error);
+
+        return res.status(500).json({
+            error: "Logout failed"
+        });
+    }
+});
 export default router;
 
