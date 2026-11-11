@@ -97,6 +97,31 @@ npm run lint
 npm run build
 ```
 
+## Deployment
+
+Deploy the API as a **Render Web Service** and the client as a **Vercel project**. The database and authentication service remain on Supabase.
+
+### Render API
+
+- Repository: `Sammycode332/codealpha_tasks`
+- Root directory: `EventRegistration`
+- Build command: `npm ci && npm run build`
+- Start command: `npm start`
+- Health-check path: `/health`
+- Required environment variables: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `CLIENT_ORIGIN`
+
+For `DATABASE_URL`, copy the **shared pooler / session mode** connection string from Supabase's **Connect** dialog when your hosting environment is IPv4-only. Set `CLIENT_ORIGIN` to the final Vercel URL (for example, `https://eventify.vercel.app`).
+
+### Vercel client
+
+- Import the same GitHub repository.
+- Set the root directory to `EventRegistration/client`.
+- Framework preset: Vite.
+- Add `VITE_API_URL` with the Render API URL (for example, `https://eventify-api.onrender.com`).
+- Deploy again whenever `VITE_API_URL` changes; it is embedded during the client build.
+
+`client/vercel.json` ensures React Router routes work when a visitor opens or refreshes a nested URL directly.
+
 ## API at a glance
 
 | Area | Endpoints |

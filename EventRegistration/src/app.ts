@@ -9,16 +9,21 @@ import { authenticate } from "./middleware/authenticate.js";
 
 const app = express();
 
+const allowedOrigins = (process.env.CLIENT_ORIGIN ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or Postman)
       if (!origin) return callback(null, true);
-      // Allow localhost dev servers
-      if (/^http:\/\/localhost:[0-9]+$/.test(origin)) {
+      const isLocalDevelopment = /^http:\/\/localhost:[0-9]+$/.test(origin);
+      if (isLocalDevelopment || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      return callback(null, true);
+      return callback(new Error("Origin is not allowed by CORS"));
     },
     credentials: true,
   })
