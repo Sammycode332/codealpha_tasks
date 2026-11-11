@@ -32,6 +32,7 @@ router.post("/register", async(req, res)=>{
               data: {
                   name: name.trim(),
               },
+              emailRedirectTo: "http://localhost:5173/login?verified=true",
           },
          });
    if(error){
@@ -54,7 +55,36 @@ router.post("/register", async(req, res)=>{
     }
     
 });
+router.post("/resend-verification", async (req, res) => {
+  try {
+    const { email } = req.body;
 
+    if (typeof email !== "string" || !email.trim()) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: {
+        emailRedirectTo: "http://localhost:5173/login?verified=true",
+      },
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(200).json({
+      message: "If verification is required, a new email has been sent.",
+    });
+  } catch (error) {
+    console.error("Resend verification error:", error);
+    return res.status(500).json({
+      error: "Unable to resend verification email",
+    });
+  }
+});
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body ?? {};
@@ -97,6 +127,43 @@ router.post("/login", async (req, res) => {
     }
 });
 
+router.post("/refresh", async (req, res) => {
+    try {
+        const { refresh_token } = req.body ?? {};
+
+        if (
+            typeof refresh_token !== "string" ||
+            !refresh_token.trim()
+        ) {
+            return res.status(400).json({
+                error: "Refresh token is required",
+            });
+        }
+
+        const { data, error } = await supabase.auth.refreshSession({
+            refresh_token: refresh_token.trim(),
+        });
+
+        if (error || !data.session) {
+            return res.status(401).json({
+                error: "Invalid or expired refresh token",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Session refreshed successfully",
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+        });
+
+    } catch (error) {
+        console.error("Token refresh error:", error);
+
+        return res.status(500).json({
+            error: "Unable to refresh session",
+        });
+    }
+});
 router.post("/logout", authenticate, async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
